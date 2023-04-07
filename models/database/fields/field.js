@@ -9,39 +9,49 @@ const { Database } = require('./../database');
 class Field extends Database{
     constructor( fieldName, dataType, fieldValue ){
         super()
-        this.dataType   = dataType
-        this.fieldName  = fieldName
-        this.value      = fieldValue
+        this._dataType   = dataType
+        this._fieldName  = fieldName
+        this._value      = fieldValue
     }
 
     value = ( value = undefined ) => {
         if( value == undefined ){
-            return this.value
+            return this._value
         }else{
-            this.value = value
+            this._value = value
         }
     }
 
     foreignKey = (table, referencesOn) => {
-        this.isForeign    = true;
-        this.foreignTable = table;
-        this.foreignField = referencesOn;
+        this._isForeign    = true;
+        this._foreignTable = table;
+        this._foreignField = referencesOn;
+    }
+
+    primaryTo = (fields) => {
+        this._primaryTo = fields;
+    }
+
+    slaveData = async (table) => {
+        
     }
 
     foreignData = async () => {
         if( this.dbo == undefined ){
             await this.init()
         }
-        const data = await this.select(this.foreignTable, { field: this.foreignField, value: this.value })
+        const query = {}
+        query[this._foreignField] = this._value;
+        const data = await this.select(this._foreignTable, query)
         return data
     }
 
     getType = () => {
-        return this.dataType
+        return this._dataType
     }
 
     getName = () => {
-        return this.fieldName
+        return this._fieldName
     }
 }
 

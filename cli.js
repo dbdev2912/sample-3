@@ -1,4 +1,3 @@
-const shell = require("shell")
 const command = process.argv[2]
 
 switch (command) {
