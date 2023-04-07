@@ -1,0 +1,15 @@
+{
+    "ui": [
+        {
+            "type": "h1",
+            "style": {
+                "font-weight": "bold"
+            },
+            "text": "H1 ne"
+        },
+        {
+            "type": "span",
+            "text": "Span ne"
+        },
+    ]
+}
