@@ -1,5 +1,5 @@
 const { Controller } = require('../../config/controllers');
-const Customers = require('../../models/customers');
+const { Customers, Customer } = require('../../models/customers');
 
 class FindTest extends Controller {
     constructor(){
@@ -17,9 +17,10 @@ class FindTest extends Controller {
     }
 
     __find_one_ = async ( req, res ) => {
-        const customer = await this.__customers.find(1);
+        const customer = await this.__customers.find(1);        
         if( customer ){
-            res.status(200).send({ success: true, data: customer })
+            const objectiveCustomer = new Customer(customer)
+            res.status(200).send({ success: true, data: objectiveCustomer.get() })
         }
         else{
             res.status(404).send({ success: false, data: "NOT FOUND" })
@@ -34,6 +35,16 @@ class FindTest extends Controller {
         else{
             res.status(404).send({ success: false, data: "NOT FOUND" })
         }
+    }
+
+    __find_primary_ = async ( req, res ) => {
+ 
+        // if( customer ){
+        //     res.status(200).send({ success: true, data: customer })
+        // }
+        // else{
+        //     res.status(404).send({ success: false, data: "NOT FOUND" })
+        // }
     }
 }
 

@@ -77,7 +77,10 @@ class Mongo {
     }
 
     insert = async ( table, value ) => {
-        const id = await this.getAutoIncrementId( table );
+        let id = value.id;
+        if( !id ){
+            id = await this.getAutoIncrementId( table );
+        }
         const insertResult = await new Promise( (resolve, reject) => {
             this.dbo.collection( table ).insertOne( {id, ...value}, (err, result) => {
                 resolve( result )

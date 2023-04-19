@@ -8,11 +8,17 @@ class Table {
         this.__tableName = name;
         this.__fields = [];
         this.__foreignKeys = [];
-        this.__primaryKey = [];
+        this.__primaryKey = [];        
     };
 
     __dbInit__ = async () => {
         await this.#dbo.init()
+    }
+
+    __getNewId__ = async () => {
+        await this.__dbInit__();
+        const id = await this.#dbo.getAutoIncrementId( this.__tableName );
+        return id;
     }
 
     __setFields__ = (fields) => {
@@ -76,7 +82,7 @@ class Table {
         return valid;
     }
 
-    __insertOne__ = async ( data ) => {
+    __insertRecord__ = async ( data ) => {
         await this.__dbInit__()
         let serializedData = {};
 
@@ -85,12 +91,31 @@ class Table {
             serializedData = { ...serializedData, ...field.__fieldObject.serializingValue() }
         })
 
-        const id = await this.#dbo.getAutoIncrementId( this.__tableName );
+        let id = data.id;
+        if( !id ){
+            id = await this.__getNewId__();
+        }            
         const primayKeyCheck = await this.__primaryKeyCheck__( serializedData );
         if( primayKeyCheck ){
             const foreignKeyCheck = await this.__foreignKeyCheck__( serializedData );
             if( foreignKeyCheck ){
                 const insertResult = await this.#dbo.insert( this.__tableName, { id, ...serializedData } )
+                return true
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    __insertObject__ = async ( serializedData ) => {
+        await this.__dbInit__()
+        const primayKeyCheck = await this.__primaryKeyCheck__( serializedData );
+        if( primayKeyCheck ){
+            const foreignKeyCheck = await this.__foreignKeyCheck__( serializedData );
+            if( foreignKeyCheck ){
+                const insertResult = await this.#dbo.insert( this.__tableName, { ...serializedData } )
                 return true
             }else{
                 return false;
@@ -123,6 +148,14 @@ class Table {
         await this.__dbInit__()
         const result = await this.#dbo.select( this.__tableName, criteria );
         return result
+    }
+
+    __updateRecord__ = async ( serializedData ) => {
+
+    }
+
+    __updateObject__ = async ( serializedData ) => {
+        
     }
 }
 
