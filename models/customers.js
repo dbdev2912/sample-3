@@ -4,17 +4,16 @@ class Customers extends Model{
     constructor(){
         super("customers");
         this.model.__addField__( "customer_id", Model.types.number )
-        this.model.__addField__( "customer_name", Model.types.string )
-        this.model.__addField__( "date_of_birth", Model.types.datetime )
-
-        this.model.__addPrimaryKey__( ["customer_id"] )
+        this.model.__addField__( "customer_name", Model.types.string, { maxLength: 255 } )
+        this.model.__addField__( "date_of_birth", Model.types.datetime )        
+        this.model.__addPrimaryKey__( ["customer_id"] )        
     }
 }
 
 class Customer extends Customers {
     constructor( { id, customer_id, customer_name, date_of_birth } ){
         super();
-        this.setDefaultValue( { id, customer_id, customer_name, date_of_birth } )
+        this.setDefaultValue( { id, customer_id, customer_name, date_of_birth } )        
     }
 
     get = () => {

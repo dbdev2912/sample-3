@@ -2,8 +2,9 @@ const Field = require('./field');
 
 
 class Int extends Field{
-    constructor( name, value ){
+    constructor( name, value, props ){
         super( name, "number", value );
+        
     }
 }
 

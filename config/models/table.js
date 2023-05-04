@@ -30,10 +30,10 @@ class Table {
         return field != undefined ? true : false
     }
 
-    __addField__ = ( fieldName, fieldObject ) => {
+    __addField__ = ( fieldName, fieldObject, fieldProps = undefined ) => {
         if( !this.__isFieldExisted__( fieldName ) ){
             this[fieldName] = new fieldObject( fieldName );
-            this.__fields.push({ __fieldName: fieldName, __fieldObject: new fieldObject( fieldName ) })
+            this.__fields.push({ __fieldName: fieldName, __fieldObject: new fieldObject( fieldName, undefined, fieldProps ) })
         }
     }
 
@@ -72,9 +72,9 @@ class Table {
             const foreignDBObj = this[__tableName];
             const key = {}
             key[ __fieldName ] = data[ __fieldName ];
-            await foreignDBObj.model.__dbInit__();
+            await foreignDBObj.model.__dbInit__();            
             const dataExists = await foreignDBObj.model.__findCriteria__( key );
-
+            
             if( !dataExists ){
                 valid = false;
             }
@@ -87,10 +87,9 @@ class Table {
         let serializedData = {};
 
         this.__fields.map( (field, index) => {
-            field.__fieldObject.value( data[ index ] )
+            field.__fieldObject.value( data[ index - 1] )
             serializedData = { ...serializedData, ...field.__fieldObject.serializingValue() }
-        })
-
+        })        
         let id = data.id;
         if( !id ){
             id = await this.__getNewId__();
@@ -98,8 +97,9 @@ class Table {
         const primayKeyCheck = await this.__primaryKeyCheck__( serializedData );
         if( primayKeyCheck ){
             const foreignKeyCheck = await this.__foreignKeyCheck__( serializedData );
+            
             if( foreignKeyCheck ){
-                const insertResult = await this.#dbo.insert( this.__tableName, { id, ...serializedData } )
+                const insertResult = await this.#dbo.insert( this.__tableName, { ...serializedData, id } )
                 return true
             }else{
                 return false;

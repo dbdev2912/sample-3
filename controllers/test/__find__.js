@@ -46,6 +46,9 @@ class FindTest extends Controller {
         //     res.status(404).send({ success: false, data: "NOT FOUND" })
         // }
     }
+    __find_date_ = async (req, res) => {
+
+    }
 }
 
 module.exports = FindTest
