@@ -17,8 +17,9 @@ class ForeignTest extends Controller {
     __find_fk_ = async (req, res) => {
         const order = await this.__orders.find(1);
         const objectOrder = new Order( order );
+        const customer = await objectOrder.getCustomer();        
 
-        res.status(200).send({ order: objectOrder.get() })
+        res.status(200).send({ order: objectOrder.get(), customer })
     }
 }
 

@@ -20,8 +20,30 @@ class Model {
         }
     }
 
-    find = async ( amount = undefined ) => {
-        return await this.model.__find__( amount )
+    __addField__ = ( fieldName, fieldObject, fieldProps = undefined ) => {
+        this.model.__addField__( fieldName, fieldObject, fieldProps = undefined )
+    }
+
+    __addForeignKey__ = ( fieldName, referencesOn ) => {
+        this[ new referencesOn().model.__tableName ] = new referencesOn()
+        this.model.__addForeignKey__( fieldName, referencesOn )
+    }
+
+    __addPrimaryKey__ = ( fields ) => {
+        this.model.__addPrimaryKey__(fields);
+    }
+
+
+    find = async ( query = undefined ) => {
+        const type = typeof( query );
+
+        switch(type){
+            case 'number':
+            case 'undefined':
+                return await this.model.__find__( query )            
+            default:
+                return await this.model.__findCriteria__(query)                
+        }
     }
 
     insert = async ( data ) => {
