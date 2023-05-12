@@ -8,8 +8,8 @@ const modelBaseDir      = './models'
 const controllerBaseDir = './controllers'
 
 const validChars = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'Z', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X', 'Y',
-    'a', 'b', 'c', 'd', 'e', 'f', 'z', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'v', 'x', 'y',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X', 'Y', 'W', 'U', 'Z',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'v', 'x', 'y', 'w', 'u', 'z',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
     '_'
 ];
@@ -63,6 +63,9 @@ const __command_create__ = ( ) => {
         case "controller":
             __command_create__controller__();
             break;
+        case "superuser":
+            __command_create_superuser__();
+            break;
         default:
             console.log(`Ở đây không có lệnh tạo ${ commands[3] } nhe quí dị!`)
             break;
@@ -84,6 +87,7 @@ const __command_create_model__ = () => {
     if( makeModelResult ){
         models.push( modelName );
         writeManageJSON()
+        console.log(`Tạo model ${ modelName } thành công!\n`)
     }
 }
 
@@ -102,6 +106,7 @@ const __command_create__controller__ = () => {
     if( makeControllerResult ){
         controllers.push( controllerName );
         writeManageJSON()
+        console.log(`Tạo controller ${ controllerName } thành công!\n`)
     }
 }
 
@@ -183,6 +188,10 @@ module.exports = ${ controllerName }
 }
 
 
+const __command_create_superuser__ = () => {
+
+}
+
 const __command_migrate__ = () => {
     let migrateModels = models;
     if( commands.length > 3 ){
@@ -240,8 +249,6 @@ const __main__ = () => {
             console.log(`Không tìm thấy lệnh! :( `)
             break;
     }
-
-    console.log({ controllers, models })
 }
 
 __main__()

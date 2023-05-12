@@ -151,7 +151,7 @@ class Table {
     }
 
     __updateRecord__ = async ( serializedData ) => {
-
+        
     }
 
     __updateObject__ = async ( serializedData ) => {

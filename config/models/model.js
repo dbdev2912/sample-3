@@ -58,6 +58,7 @@ class Model {
                 const { __fieldName } =  this.model.__fields[i]
                 newData[ __fieldName ] = this[ __fieldName ].value();                
             }
+            console.log(newData )
             
         }else{            
             id = await this.model.__getNewId__();
