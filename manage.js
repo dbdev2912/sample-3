@@ -63,9 +63,6 @@ const __command_create__ = ( ) => {
         case "controller":
             __command_create__controller__();
             break;
-        case "superuser":
-            __command_create_superuser__();
-            break;
         default:
             console.log(`Ở đây không có lệnh tạo ${ commands[3] } nhe quí dị!`)
             break;
@@ -187,10 +184,6 @@ module.exports = ${ controllerName }
     return true 
 }
 
-
-const __command_create_superuser__ = () => {
-
-}
 
 const __command_migrate__ = () => {
     let migrateModels = models;

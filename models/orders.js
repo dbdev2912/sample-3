@@ -28,8 +28,8 @@ class Order extends Orders {
         }
     }
 
-    getCustomer = async () => {
-        const customer = await this.customers.find({ customer_id: this.customer_id });
+    getCustomer = async () => {                
+        const customer = await this.customers.__findCriteria__({ customer_id: this.customer_id.value() }); /* ??? */
         return customer;
     }
 }

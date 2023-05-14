@@ -1,12 +1,12 @@
 const Field = require('./field');
 
-class Number extends Field{
+class Bool extends Field{
     constructor( name, value, props ){
-        super( name, "number", value );
+        super( name, "bool", value );
         if( !this.selfValidate() ){
-            throw Error ('Giá trị truyền vào không tương thích với kiểu dữ liệu number')
+            throw Error ('Giá trị truyền vào không tương thích với kiểu dữ liệu bool')
         }
-        this.__required = true;
+        this.value(true);        
         this.#__initializeProperties__(props);
     }
 
@@ -20,11 +20,13 @@ class Number extends Field{
                 Với những thuộc tính được đánh giá là undefined thì vẫn giữ nguyên giá trị mặc định.
             @param: props <Object>
             @author: DS
-        **/
-        if( props ){
-            const { required } = props;
-            if( required != undefined ){
-                this.__required = required
+        **/ 
+          
+        if( props ){            
+            if( typeof(props.default) == "boolean" ){
+                this.value( props.default )            
+            }else{
+                throw Error("Giá trị mặc định phải có kiểu BOOL")
             }
         }
     }
@@ -38,26 +40,17 @@ class Number extends Field{
             @return Boolean
         **/
 
-        const numericChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
         const value = this.__value;
         
         if( value === undefined ){
             return true
         }else{
-            const stringifiedValue = value.toString();
-            let valid = true;
-            for( let i = 0 ; i < stringifiedValue.length; i++ ){
-                const char = stringifiedValue[i]
-                if( numericChars.indexOf( char ) == -1 ){
-                    valid = false
-                }
+            if( typeof(value) == "boolean" ){
+                return true;
             }
-            if(valid){
-                this.value( parseFloat(value) )
-            }
-            return valid;
+            return false;
         }
     }
 }
 
-module.exports = Number
+module.exports = Bool

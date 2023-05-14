@@ -12,7 +12,7 @@ class String extends Field{
     constructor( name, value, props ){
         super( name, "string", value );
         this.__maxLength = 255;
-        this.__null = true;
+        this.__required = true;
 
         this.#__initializeProperties( props )
     }
@@ -25,18 +25,18 @@ class String extends Field{
             kiểm soát dữ liệu một cách độc lập.
                 Các thuộc tính được truyền vào là không bắt buộc, có nhỏ nào xào nhỏ đó.
                 Với những thuộc tính được đánh giá là undefined thì vẫn giữ nguyên giá trị mặc định.
-            @param: props {}
+            @param: props <Object>
             @author: DS
         **/
 
 
         if( props != undefined ){
-            const { maxLength, nullable } = props;
+            const { maxLength, required } = props;
             if( maxLength != undefined ){
                 this.setMaxLength( maxLength );
             }
-            if( nullable != undefined ){
-                this.__null = nullable
+            if( required != undefined ){
+                this.__required = required
             }
         }
     }
@@ -47,7 +47,7 @@ class String extends Field{
             @desc: Nếu giá trị truyền vào rỗng thì báo lỗi,
             xác thực giá trị truyền vào có phải là số nguyên không,
             đặt lại độ dài hiện tại và trả về nó
-            @param: val ANY
+            @param: val <Any>
             @author: DS
         **/
         
@@ -75,7 +75,7 @@ class String extends Field{
             @override: Field::value;
             @desc: Nếu giá trị truyền vào rỗng thì trả về giá trị hiện tại,
             nếu không thì đặt giá trị hiện tại bằng giá trị truyền vào và trả về nó
-            @params: val(string)
+            @params: val <String>
             @author: DS
         **/
         if( val ){

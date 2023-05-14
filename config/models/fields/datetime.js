@@ -3,7 +3,7 @@ const Field = require('./field');
 class Datetime extends Field{
     constructor( name, value, props ){
         super( name, "datetime", value );
-        this.__null = true;
+        this.__required = true;
         this.__format = "DD-MM-YYYY hh:mm:ss"
         this.#__initializeProperties__(props)
     }
@@ -16,13 +16,13 @@ class Datetime extends Field{
             kiểm soát dữ liệu một cách độc lập.
                 Các thuộc tính được truyền vào là không bắt buộc, có nhỏ nào xào nhỏ đó.
                 Với những thuộc tính được đánh giá là undefined thì vẫn giữ nguyên giá trị mặc định.
-            @param: props {}
+            @param: props <Object>
             @author: DS
         **/
         if( props ){
-            const { nullable, format } = props;
-            if( nullable != undefined ){
-                this.__null = nullable
+            const { required, format } = props;
+            if( required != undefined ){
+                this.__required = required
             }
             if( format != undefined ){
                 this.__format = format
@@ -31,6 +31,17 @@ class Datetime extends Field{
     }
 
     #__format_date__ = () => {
+
+        /**
+            @name: phương thức định cmn dạng ngày giờ
+            @desc: 
+                    Thiệt là không biết mô tả cái gì nữa tại cái code nó lù lù trơ trơ
+                ra như thế này mà đọc không hiểu thì cũng không còn gì để nói
+
+            @param: /
+            @author: Moc
+        **/
+
         const date = new Date(this.__value);
         
         const year = date.getFullYear();

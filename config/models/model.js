@@ -1,11 +1,14 @@
 const Table = require('./table');
-const { Number, String, Datetime } = require('./fields');
+const { Number, String, Datetime, Int, Bool } = require('./fields');
 
 class Model {
     static types = {
-        number: Number,
-        string: String,
-        datetime: Datetime,
+        number:     Number,
+        int:        Int,
+        
+        string:     String,
+        datetime:   Datetime,
+        bool:       Bool
     }
     constructor(modelName){
         this.model = new Table(modelName)
@@ -13,19 +16,20 @@ class Model {
     }
 
     setDefaultValue = ( serializedData ) => {
-        for( let i = 0; i < this.model.__fields.length; i++ ){
-            const { __fieldName, __fieldObject } =  this.model.__fields[i]
+        const fields = this.model.__getFields__()
+        for( let i = 0; i < fields.length; i++ ){
+            const { __fieldName, __fieldObject } =  fields[i]
             this[ __fieldName ] = __fieldObject
             this[ __fieldName ].value( serializedData[ __fieldName ] )
         }
     }
 
-    __addField__ = ( fieldName, fieldObject, fieldProps = undefined ) => {
-        this.model.__addField__( fieldName, fieldObject, fieldProps = undefined )
+    __addField__ = ( fieldName, fieldObject, fieldProps = undefined ) => {        
+        this.model.__addField__( fieldName, fieldObject, fieldProps )
     }
 
-    __addForeignKey__ = ( fieldName, referencesOn ) => {
-        this[ new referencesOn().model.__tableName ] = new referencesOn()
+    __addForeignKey__ = ( fieldName, referencesOn ) => {        
+        this[ new referencesOn().model.__getTableName__() ] = new referencesOn().model
         this.model.__addForeignKey__( fieldName, referencesOn )
     }
 
@@ -54,18 +58,21 @@ class Model {
         let id = this.id.value();
         if( id ){
             const newData = { id };
-            for( let i = 0; i < this.model.__fields.length; i++ ){
-                const { __fieldName } =  this.model.__fields[i]
+            const fields = this.model.__getFields__()
+            for( let i = 0; i < fields.length; i++ ){
+                const { __fieldName } =  fields[i]
                 newData[ __fieldName ] = this[ __fieldName ].value();                
             }
-            console.log(newData )
-            
+            const updateResult = await this.model.__updateObject__( {...newData} );
+            return updateResult;
+                        
         }else{            
             id = await this.model.__getNewId__();
             const newData = { id };
+            const fields = this.model.__getFields__()
 
-            for( let i = 0; i < this.model.__fields.length; i++ ){
-                const { __fieldName } =  this.model.__fields[i]
+            for( let i = 0; i < fields.length; i++ ){
+                const { __fieldName } =  fields[i]
                 newData[ __fieldName ] = this[ __fieldName ].value();                
             }
             let insertResult = await this.model.__insertObject__( newData );

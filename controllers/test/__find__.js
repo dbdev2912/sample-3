@@ -20,6 +20,7 @@ class FindTest extends Controller {
         const customer = await this.__customers.find(1);        
         if( customer ){
             const objectiveCustomer = new Customer(customer)
+            objectiveCustomer.gender.value(false)
             res.status(200).send({ success: true, data: objectiveCustomer.get() })
         }
         else{

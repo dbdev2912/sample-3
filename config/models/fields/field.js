@@ -5,13 +5,17 @@ class Field {
         this.__value = value;
     }
 
+    __alterDataType__ = ( newType ) => {
+        this.__datatype = newType
+    }
+
 
     value = ( val = undefined ) => {
         /**
             @name: phương thức value;
             @desc: Nếu giá trị truyền vào rỗng thì trả về giá trị hiện tại,
             nếu không thì đặt giá trị hiện tại bằng giá trị truyền vào và trả về nó
-            @params: val ANY
+            @params: val <Any>
             @auth: Linguistic
         **/
         if( val ){

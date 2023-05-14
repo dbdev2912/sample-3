@@ -22,7 +22,16 @@ const floatValidate = ( numberString ) => {
     return valid;
 }
 
+
+const objectComparator = (object_1, object_2) => {
+    const strObject_1 = JSON.stringify(object_1)
+    const strObject_2 = JSON.stringify(object_2)
+    return strObject_1 === strObject_2;
+}
+
+
 module.exports = {
     intValidate,
-    floatValidate
+    floatValidate,
+    objectComparator
 }
