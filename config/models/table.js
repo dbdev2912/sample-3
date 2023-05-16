@@ -28,7 +28,7 @@ class Table {
          *      #__fields <OBJ{ __fieldMame, __fieldObject }>[]
          *                     => __field_name  String
          *                        __fieldObject Field 
-         *      #__foreignKeys <String>[]
+         *      #__foreignKeys <OBJ{__fieldName, __tableName }>[]
          *      #__primaryKey  <String>[]
          * 
          * @author Linguistic
@@ -48,7 +48,6 @@ class Table {
          * 
          *  @author DS
          */
-
 
         await this.#dbo.init()
     }
@@ -137,7 +136,7 @@ class Table {
     __addForeignKey__ = ( fieldName, referencesOn ) => {
 
         /**
-         *  @desc Thêm một trường khoá ngoại và GHI ĐÈ một thuộc tính với tên là bảng chứa khoá chính         *     
+         *  @desc Thêm một trường khoá ngoại và GHI ĐÈ một thuộc tính với tên là bảng chứa khoá chính           
          * 
          *  @params fieldName       <String>
          *          referencesOn    <Model>
@@ -147,7 +146,7 @@ class Table {
          */
 
         const ObjReferencesOn = new referencesOn()
-        const __tableName = ObjReferencesOn.model.__getTableName__();                       
+        const __tableName = ObjReferencesOn.getModel().__getTableName__();                       
         this[ __tableName ] = ObjReferencesOn;       
       
         this.#__foreignKeys.push({ __fieldName: fieldName, __tableName });
@@ -185,11 +184,19 @@ class Table {
     }
 
     __primaryKeyCheck__ = async (data) => {
+
+        /**
+         *  @desc Kiểm tra ràng buộc khóa chính của data truyền vào, nếu (các) trường của data có giá trị chưa từng tồn tại
+         *  thì kể như khóa chính đạt.
+         * 
+         *  @params data <Object>
+         *          
+         * 
+         *  @author Linguistic
+         */
+
         if( this.#__primaryKey.length !== 0 ){
-            const key = {}
-            this.#__primaryKey.map( pk => {
-                key[pk] = data[pk]
-            });
+            const key = this.__serializePrimaryData__(data);
             const recordExists = await this.#dbo.select(this.#__tableName, key);
             if( recordExists ){
                 return false;
@@ -202,16 +209,37 @@ class Table {
     }
 
     __foreignKeyCheck__ = async (data) => {
+
+        /**
+         *  @desc Kiểm tra (các) ràng buộc khóa ngoại, nếu dữ liệu được ánh xạ không tồn tại thì
+         *  kể như dữ liệu không hợp lệ
+         * 
+         *  @params data <Object>         *          
+         * 
+         *  @author Linguistic
+         */
+
         let valid = true;
+        /**
+         * (1) Vòng lập duyệt từng đối tượng khóa ngoại và băm chúng thành 2 biến với tên __fieldName & __tableName
+         * (2) Tạo biến với giá trị là thuộc tính có tên là giá trị __tableName của this, thuộc tính này có kiểu Model và được thêm tự động
+         * khi thêm khóa ngoại
+         * 
+         * (3) Tạo một đối tượng rỗng và đặt giá trị cho thuộc tính __fieldName là giá trị tương ứng của nó trong data
+         * (4) Truy vấn dữ liệu từ bảng __tableName thông qua foreignDBObj bằng điều kiện là giá trị của key
+         * 
+         * (5) Nếu dữ liệu không tồn tại thì đặt lại giá trị cho valid là false
+         */ 
+
         for( let i = 0; i < this.#__foreignKeys.length; i++ ){
-            const { __fieldName, __tableName } = this.#__foreignKeys[i];
-            const foreignDBObj = this[__tableName];
+            const { __fieldName, __tableName } = this.#__foreignKeys[i];  /* 1 */
+            const foreignDBObj = this[__tableName]; /* 2 */
             const key = {}
-            key[ __fieldName ] = data[ __fieldName ];
+            key[ __fieldName ] = data[ __fieldName ]; /* 3 */
             await foreignDBObj.model.__dbInit__();            
-            const dataExists = await foreignDBObj.model.__findCriteria__( key );
+            const dataExists = await foreignDBObj.model.__findCriteria__( key ); /* 4 */
             
-            if( !dataExists ){
+            if( !dataExists ){ /* 5 */
                 valid = false;
             }
         }
@@ -219,6 +247,16 @@ class Table {
     }
 
     __insertRecord__ = async ( data ) => {
+
+        /**
+         *  @desc Chèn dữ liệu theo dạng một bảng ghi với thông tin được truyền vào tuần tự theo thứ tự của các trường
+         *  Phương thức này không khuyến cáo dùng vì có thể làm sai lệch dữ liệu giữa các trường
+         * 
+         *  @params data <Any>[]                 
+         * 
+         *  @author Linguistic
+         */
+
         await this.__dbInit__()
         let serializedData = {};
 
@@ -246,12 +284,26 @@ class Table {
     }
 
     __insertObject__ = async ( serializedData ) => {
-        await this.__dbInit__()
-        const primayKeyCheck = await this.__primaryKeyCheck__( serializedData );
+
+        /**
+         *  @desc Lưu dữ liệu hiện tại vào cơ sở dữ liệu
+         *      (1) Khởi tạo đối tượng truy vấn cơ sở dữ liệu
+         *      (2) Kiểm tra khóa chính xem dữ liệu mới có vi phạm khóa khum
+         *      (3) Kiểm tra khóa ngoại
+         *      (4) Nếu dữ liệu vượt qua được cả 2 ràng buộc thì lưu vào cơ sở dữ liệu
+         * 
+         *  @params serializedData <Object>                 
+         * 
+         *  @author Linguistic
+         */
+        
+
+        await this.__dbInit__() /* 1 */
+        const primayKeyCheck = await this.__primaryKeyCheck__( serializedData ); /* 2 */ 
         if( primayKeyCheck ){
-            const foreignKeyCheck = await this.__foreignKeyCheck__( serializedData );
+            const foreignKeyCheck = await this.__foreignKeyCheck__( serializedData ); /* 3 */
             if( foreignKeyCheck ){
-                const insertResult = await this.#dbo.insert( this.#__tableName, { ...serializedData } )
+                const insertResult = await this.#dbo.insert( this.#__tableName, { ...serializedData } ) /* 4 */
                 return true
             }else{
                 return false;
@@ -261,7 +313,16 @@ class Table {
         }
     }
 
-    __find__ = async ( amount ) => {
+    __find__ = async ( amount = undefined ) => {
+
+        /**
+         *  @desc Truy vấn một số lượng dữ liệu nếu amount có giá trị, nếu không thì truy vấn toàn bộ dữ liệu
+         * 
+         *  @params amount <Int>                 
+         * 
+         *  @author Linguistic
+         **/
+        
         await this.__dbInit__()
         if( amount === undefined ){
             return await this.#dbo.select( this.#__tableName );
@@ -281,26 +342,53 @@ class Table {
     }
 
     __findCriteria__ = async ( criteria ) => {
+
+        /**
+         *  @desc Truy vấn dữ liệu bằng điều kiện là một đối tượng
+         * 
+         *  @params serializedData <Object>                 
+         * 
+         *  @author Linguistic
+         */
+
         await this.__dbInit__()
         const result = await this.#dbo.select( this.#__tableName, criteria );
         return result
     }
 
     __updateObject__ = async ( serializedData ) => {
-        await this.__dbInit__()
+
+        /**
+         *  @desc Cập nhật dữ liệu
+         *  Cập nhật dữ liệu chỉ áp dụng với các trường không phải khóa chính
+         *  Nếu trường được cập nhật là khóa ngoại mà vi phạm ràng buộc thì cũng sẽ không được cập nhật
+         *  (1) Khởi tạo đối tượng truy vấn cơ sở dữ liệu
+         *  (2) Truy vấn giá trị cũ nếu tồn tại thì đi đến bước (3), nếu không thì trả về false
+         *  (3) Tạo một đối tượng chứa giá trị của (các) trường khóa chính trên dữ liệu cũ
+         *  (4) Tạo một đối tượng chứa giá trị của (các) trường khóa chính trên dữ liệu mới
+         *  (5) So sánh hai đối tượng khóa chính, nếu giống nhau thì tiếp tục đến bước (6), không thì trả về false
+         *  (6) Kiểm trả các ràng buộc khóa ngoại
+         *  (7) Nếu các khóa ngoại đều OK thì cập nhật dữ liệu và kết thúc
+         * 
+         * 
+         *  @params serializedData <Object>                 
+         * 
+         *  @author Linguistic
+         */
+
+        await this.__dbInit__()  /* 1 */ 
         const { id } = serializedData;
-        const oldValue = await this.__findCriteria__( {id } )
+        const oldValue = await this.__findCriteria__( {id } )  /* 2 */ 
 
         if( oldValue ){
-            const oldKey = this.__serializePrimaryData__( oldValue );
-            const newKey = this.__serializePrimaryData__( serializedData );
-            const pkCheck = await this.__primaryKeyCheck__(serializedData);
-            const fkCheck = await this.__foreignKeyCheck__(serializedData);
-            if( objectComparator(oldKey, newKey) ){
+            const oldKey = this.__serializePrimaryData__( oldValue );  /* 3 */ 
+            const newKey = this.__serializePrimaryData__( serializedData );  /* 4 */       
+            if( objectComparator(oldKey, newKey) ){   /* 5 */
+                const fkCheck = await this.__foreignKeyCheck__(serializedData);  /* 6 */ 
                 if( fkCheck ){
                     delete serializedData.id;
-                    await this.#dbo.update(this.#__tableName, { id }, { ...serializedData })
-                    /* This operator could extend to modify even primary-key fields if they has no foreign record */
+                    await this.#dbo.update(this.#__tableName, { id }, { ...serializedData })  /* 7 */ 
+                    
                     return true
                 }else{
                     return false;
@@ -314,13 +402,41 @@ class Table {
     }
 
     __deleteObject__ = async ( criteria  = undefined ) => {
-        const isCriteriaNull = objectComparator( criteria, {} );
-        if( isCriteriaNull ){
-            return false
+
+        /**
+         *  @desc Xóa một (hoặc nhiều) bảng ghi khỏi bảng
+         *  (1) Khởi tạo đối tượng truy vấn dữ liệu
+         *  (2) So sánh điều kiện xóa với {}
+         *  (3) Nếu điều kiện xóa là một đối tượng có nghĩa và khác {} thì thực hiện thao tác xóa, ngoài ra báo lỗi
+         * 
+         *  @params criteria <Object>              
+         * 
+         *  @author Linguistic
+         */
+        await this.__dbInit__() /* 1 */
+
+        const isCriteriaNull = objectComparator( criteria, {} ); /* 2 */
+        if( criteria && !isCriteriaNull ){ /* 3 */            
+            await this.#dbo.delete( this.#__tableName, criteria ); 
+            return true;            
         }else{
-            await this.#dbo.delete( this.#__tableName, criteria );
-            return true;
+            throw Error("Xóa dữ liệu với điều kiện bỏ trống đồng nghĩa với việc xóa toàn bộ dữ liệu, bạn sẽ cần dùng một phương thức khác với tên\n__deleteAll__()\nĐây là phương thức nguy hiểm nên hạn chế sử dụng nhé!")
         }
+    }
+
+    __deleteAll__ = async () => {
+
+        /**
+         *  @desc Xóa toàn bộ dữ liệu của bảng
+         * 
+         *  @params /
+         * 
+         *  @author Linguistic
+         */
+
+        await this.__dbInit__()
+        await this.#dbo.delete( this.#__tableName, {} );
+        return true;
     }
 }
 

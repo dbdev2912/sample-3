@@ -24,7 +24,6 @@ class Int extends Number{
         if( value === undefined ){
             return true
         }else{
-            console.log(value)
             const stringifiedValue = value.toString();
             let valid = true;
             for( let i = 0 ; i < stringifiedValue.length; i++ ){

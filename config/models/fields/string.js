@@ -7,12 +7,13 @@ class String extends Field{
      * @props
      *      - maxLength ( INT )
      *      - nullable  ( BOOLEAN )
-     *      
+     *      - default   ( STRING )
      **/
     constructor( name, value, props ){
         super( name, "string", value );
         this.__maxLength = 255;
         this.__required = true;
+        this.__default = undefined;
 
         this.#__initializeProperties( props )
     }
@@ -37,6 +38,9 @@ class String extends Field{
             }
             if( required != undefined ){
                 this.__required = required
+            }
+            if( props.default != undefined ){
+                this.__default = props.default
             }
         }
     }

@@ -5,7 +5,7 @@ class Number extends Field{
         super( name, "number", value );
         if( !this.selfValidate() ){
             throw Error ('Giá trị truyền vào không tương thích với kiểu dữ liệu number')
-        }
+        }        
         this.__required = true;
         this.#__initializeProperties__(props);
     }
