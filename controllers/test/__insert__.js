@@ -1,5 +1,5 @@
 const { Controller } = require('../../config/controllers');
-const { Customers, Customer } = require('../../models/customers');
+const { Customers, Customer } = require('../../models/Customers');
 
 class InsertTest extends Controller {
     constructor(){

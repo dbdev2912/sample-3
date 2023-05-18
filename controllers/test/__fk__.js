@@ -1,5 +1,5 @@
 const { Controller } = require('../../config/controllers');
-const { Orders, Order } = require('../../models/orders');
+const { Orders, Order } = require('../../models/Orders');
 
 class ForeignTest extends Controller {
     constructor(){

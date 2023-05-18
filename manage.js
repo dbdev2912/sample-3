@@ -32,6 +32,14 @@ const writeManageJSON = () => {
     fs.writeFileSync(managePATH, stringifiedData)
 }
 
+const writeManageJSONWithData = ({ models, controllers }) => {
+    if( fs.existsSync(managePATH) ){
+        fs.unlinkSync(managePATH)
+    }
+    const stringifiedData = JSON.stringify({ models, controllers });
+    fs.writeFileSync(managePATH, stringifiedData)
+}
+
 /* ==== BASIC FUNCTIONS ====*/
 
 const validateName = ( name ) => {
@@ -74,12 +82,7 @@ const __command_create_model__ = () => {
         console.log("Không tìm thấy tên model trong command!")
         return
     }
-    const modelName = commands[4];
-    const findExistedModel = models.filter( model => model === modelName )[0];
-    if( findExistedModel ){
-        console.log("Model này đã tồn tại!");
-        return
-    }
+    const modelName = commands[4];    
     const makeModelResult = __make_model__( modelName )
     if( makeModelResult ){
         models.push( modelName );
@@ -94,11 +97,7 @@ const __command_create__controller__ = () => {
         return
     }
     const controllerName = commands[4];
-    const findExistedController = controllers.filter( controller => controller === controllerName )[0];
-    if( findExistedController ){
-        console.log("Controller này đã tồn tại!");
-        return
-    }
+   
     const makeControllerResult =  __make_controller__( controllerName )
     if( makeControllerResult ){
         controllers.push( controllerName );
@@ -124,14 +123,26 @@ const __make_model__ = ( modelPath ) => {
 const { Model } = require('${"../".repeat(splitedName.length) }config/models');
 class ${ modelName } extends Model{
     constructor(){
-        super("${ modelName }");
-        this.model.__addField__( "${ modelName }_id", Model.types.number )
+        super("${ modelName.toLowerCase() }");
+        this.__addField__( "${ modelName }_id", Model.types.int )
     
-        this.model.__addPrimaryKey__( ["${ modelName }_id"] )        
+        this.__addPrimaryKey__( ["${ modelName }_id"] )        
     }
 }   
-    
-module.exports = ${ modelName }
+class ${ modelName }Record extends ${ modelName } {
+    constructor( { id, ${ modelName }_id } ){
+        super();
+        this.setDefaultValue( { id, ${ modelName }_id } )        
+    }
+
+    get = () => {
+        return {
+            id: this.id.value(),
+            ${ modelName }_id: this.${ modelName }_id.value()
+        }
+    }
+}
+module.exports = { ${ modelName }, ${ modelName }Record }
     `;    
     
     for( let i = 0 ; i < modelDirs.length; i++ ){
@@ -142,8 +153,12 @@ module.exports = ${ modelName }
             fs.mkdirSync( modelStringPath )
         }
     }
-    
-    fs.writeFileSync(`${ modelBaseDir }/${ modelPath }.js`, modelTemplate )  
+    const newModelFilePath = `${ modelBaseDir }/${ modelPath }.js`;
+
+    if( fs.existsSync( newModelFilePath ) ){
+        fs.unlinkSync( newModelFilePath )
+    }
+    fs.writeFileSync(newModelFilePath, modelTemplate )  
     return true;
 }
 
@@ -180,12 +195,19 @@ module.exports = ${ controllerName }
             fs.mkdirSync( controllerStringPath )
         }
     }
-    fs.writeFileSync(`${ controllerBaseDir }/${ controllerPath }.js`, controllerTemplate )   
+
+    const newControllerFilePath = `${ controllerBaseDir }/${ controllerPath }.js`
+
+    if( fs.existsSync( newControllerFilePath ) ){
+        fs.unlinkSync( newControllerFilePath )
+    }
+
+    fs.writeFileSync(newControllerFilePath, controllerTemplate )   
     return true 
 }
 
 
-const __command_migrate__ = () => {
+const __command_migrate__ = async () => {
     let migrateModels = models;
     if( commands.length > 3 ){
         migrateModels = commands.slice( 3, commands.length );
@@ -201,23 +223,49 @@ const __command_migrate__ = () => {
         }
     }
 
+    const existingModels = []
     const modelObjects = migrateModels.map( model => {
         const modelPath = `${ modelBaseDir }/${ model }`.replace('//', '/'); 
         try{
             const obj = require(modelPath)
-            return new obj()
+            const keys = Object.keys(obj);
+            const modelObject = obj[keys[0]]   
+            existingModels.push( model )         
+            return modelObject
         }catch{
             return undefined
-        }    
+        }
     }).filter( obj => obj != undefined );
 
     /* Translate to MySQL OR Anything Code base on env */
+    /* Check the fucking fields and keys either the same or not */
 
-    modelObjects.map( obj => {
-        console.log( obj.model.__fields.map( field => field.__fieldName ) )
-    })
+    let valid = true;
+    for( let i = 0 ; i < modelObjects.length; i++ ){
+        const modelObject = modelObjects[i]
+        const validateResult = await modelValidator(modelObject)
+        if( !validateResult ){
+            valid = false
+        }
+    }
+
+    if( valid ){
+        console.log("VALID")
+        /* Write change to database  */
+    }
+
+
+    writeManageJSONWithData({ controllers, models: existingModels })
 }
 
+
+const modelValidator = async ( modelObj ) => {
+    const Model = new modelObj()
+    const model = Model.getModel()
+    const fields = model.__getFields__()
+    console.log( fields.map( field => field.__fieldName ).join(", ") )
+    return true
+}
 
 /* ==== MAIN THREAD ==== */
 const manageData = readManageJSON()
@@ -225,8 +273,22 @@ const { controllers, models } = manageData;
 const commands = process.argv 
 
 
-const __main__ = () => {
+const __main__ = async () => {
     if( commands.length < 3 ){
+        console.log(`
+Cú pháp: 
+node manage create [ model < modelName > ]  ||
+            create [ controller < controllerName > ] ||
+
+            migrate
+    
+
+Ví dụ:
+    node manage create model MyModel
+    node manage migrate
+
+:>
+`)
         return
     }
     const mainCommand = commands[2].toLowerCase();
@@ -236,7 +298,7 @@ const __main__ = () => {
             __command_create__()
             break;
         case "migrate":
-            __command_migrate__()
+            await __command_migrate__()
             break;
         default:
             console.log(`Không tìm thấy lệnh! :( `)

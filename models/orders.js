@@ -1,5 +1,5 @@
 const { Model } = require('../config/models');
-const { Customers } = require('./customers');
+const { Customers } = require('./Customers');
 
 class Orders extends Model{
     constructor(){

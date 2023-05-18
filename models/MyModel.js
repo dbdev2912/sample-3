@@ -2,13 +2,24 @@
 const { Model } = require('../config/models');
 class MyModel extends Model{
     constructor(){
-        super("MyModel");
-        this.model.__addField__( "MyModel_id", Model.types.number )
-        this.model.__addField__( "Model_value", Model.types.string )
-        this.model.__addField__( "Model_create_on", Model.types.datetime )
-        this.model.__addPrimaryKey__( ["MyModel_id"] )        
+        super("mymodel");
+        this.__addField__( "MyModel_id", Model.types.int )
+    
+        this.__addPrimaryKey__( ["MyModel_id"] )        
     }
 }   
-    
-module.exports = MyModel
+class MyModelRecord extends MyModel {
+    constructor( { id, MyModel_id } ){
+        super();
+        this.setDefaultValue( { id, MyModel_id } )        
+    }
+
+    get = () => {
+        return {
+            id: this.id.value(),
+            MyModel_id: this.MyModel_id.value()
+        }
+    }
+}
+module.exports = { MyModel, MyModelRecord }
     

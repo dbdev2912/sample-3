@@ -1,7 +1,7 @@
 
 const { Controller } = require('../../config/controllers');
-const { Customers, Customer } = require('../../models/customers');
-const { Orders, Order } = require(  '../../models/orders');
+const { Customers, Customer } = require('../../models/Customers');
+const { Orders, Order } = require(  '../../models/Orders');
 
 class __update__ extends Controller {    
     constructor(){

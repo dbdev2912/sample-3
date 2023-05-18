@@ -4,8 +4,7 @@ const { Number, String, Datetime, Int, Bool } = require('./fields');
 class Model {
     static types = {
         number:     Number,
-        int:        Int,
-        
+        int:        Int,        
         string:     String,
         datetime:   Datetime,
         bool:       Bool
@@ -14,7 +13,7 @@ class Model {
 
     constructor(modelName){
         this.#model = new Table(modelName)
-        this.#model.__addField__( "id", Model.types.number );
+        this.#model.__addField__( "id", Model.types.int );
     }
 
     getModel = () => {
