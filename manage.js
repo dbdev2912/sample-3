@@ -55,6 +55,18 @@ const validateName = ( name ) => {
     return valid;
 } 
 
+const successLog = (msg) => {
+    console.log(`PASSED:   ${msg}`)
+}
+
+const errorLog = (msg) => {
+    console.log(`ERROR!:   ${ msg }`)
+}
+
+const warningLog = (msg) => {
+    console.log(`WARNNING: ${ msg }`)
+}
+
 /* ==== COMMANDS RESOLVING ====*/
 
 
@@ -260,10 +272,93 @@ const __command_migrate__ = async () => {
 
 
 const modelValidator = async ( modelObj ) => {
-    const Model = new modelObj()
-    const model = Model.getModel()
-    const fields = model.__getFields__()
-    console.log( fields.map( field => field.__fieldName ).join(", ") )
+
+    /** 
+        Có ít 2 trường bao gồm id 
+        Có ít nhất một trường khóa chính 
+        Khóa chính phải thuộc danh sách các trường 
+        Nếu có khóa ngoại thì 
+            - Khóa ngoại phải tồn tại trong danh sách các trường 
+            - Bảng chứa khóa ngoại phải tồn tại
+            - Khóa ngoại phải thuộc danh sách các trường thuộc bảng chứa khóa ngoại 
+    **/
+
+    const Model       = new modelObj()
+    const model       = Model.getModel()
+    const fields      = model.__getFields__()
+    const tableName   = model.__getTableName__();
+    const primaryKey  = model.__getPrimaryKey__()
+    const foreignKeys = model.__getForeignKeys__() 
+    const fieldAmountCheck = () => {
+        if( fields.length > 1 ){
+            return true;
+        }
+        errorLog(`Bảng ${ tableName } cần có ít nhất một trường`)
+        return false
+    }
+
+    const pkAmountCheck = () => {
+        if( primaryKey.length > 0 ){
+            return true;
+        }
+        errorLog(`Bảng ${ tableName } cần có ít nhất một trường làm khóa chính`)
+        return false
+    }
+
+    const pkValidator = () => {
+        let valid = true;
+        for( let i = 0; i < primaryKey.length; i++ ){
+            const primaryField = primaryKey[i];
+
+            const filtedField = fields.filter( field => field.__fieldName == primaryField )[0];
+            if( filtedField == undefined ){
+                errorLog(`Khóa ${ primaryField } không tồn tại trong danh sách trường của bảng ${ tableName }`)
+                valid = false;
+            }else{
+                successLog(`Khóa ${ primaryField } hợp lệ`)
+            }
+        }
+        return valid;
+    }
+
+    const fkValidator = () => {
+
+        if( foreignKeys.length == 0 ){
+            return true;
+        }else{
+
+            let valid = true;
+            for( let i = 0; i < foreignKeys.length; i++ ){
+                const { __fieldName, __tableName, __onField } = foreignKeys[i];
+                const foreignModel = Model[ __tableName ];
+
+                const fieldExisted = fields.filter( field => field.__fieldName === __fieldName )[0]
+
+                const foreignFields = foreignModel.__getFields__()
+                const foreignTableName = foreignModel.__getTableName__()
+                const filtedField = foreignFields.filter( field => field.__fieldName === __onField )[0];
+
+                if( fieldExisted != undefined && filtedField != undefined ){
+                    successLog(`Khóa ngoại ${ __fieldName } hợp lệ `)
+                }else{
+                    if( fieldExisted == undefined ){
+                        errorLog(`Khóa ${ __fieldName } không tồn tại trong danh sách trường của bảng ${ tableName }`)
+                    }
+                    if( filtedField == undefined ){
+                        errorLog(`Khóa ${ __onField } không tồn tại trong danh sách trường của bảng ${ foreignTableName }`)
+                    }
+                    valid = false;
+                }
+            }
+            return valid;
+        }
+
+    }
+    fieldAmountCheck()
+    pkAmountCheck()
+    pkValidator()
+    fkValidator()
+
     return true
 }
 

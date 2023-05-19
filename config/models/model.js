@@ -33,9 +33,9 @@ class Model {
         this.#model.__addField__( fieldName, fieldObject, fieldProps )
     }
 
-    __addForeignKey__ = ( fieldName, referencesOn ) => {        
+    __addForeignKey__ = ( fieldName, referencesOn, onField = undefined ) => {        
         this[ new referencesOn().getModel().__getTableName__() ] = new referencesOn().getModel()
-        this.#model.__addForeignKey__( fieldName, referencesOn )
+        this.#model.__addForeignKey__( fieldName, referencesOn, onField )
     }
 
     __addPrimaryKey__ = ( fields ) => {

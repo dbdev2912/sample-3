@@ -1,5 +1,5 @@
 const { Model } = require('../config/models');
-const { Customers } = require('./Customers');
+const { Customers } = require('./customers');
 
 class Orders extends Model{
     constructor(){
@@ -9,7 +9,7 @@ class Orders extends Model{
         this.__addField__("create_on", Model.types.datetime, { format: "YYYY/DD/MM" });
 
         this.__addPrimaryKey__(["order_id"]);
-        this.__addForeignKey__("customer_id", Customers)
+        this.__addForeignKey__("customer_id", Customers, "customer_id")
     }
 }
 

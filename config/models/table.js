@@ -76,6 +76,26 @@ class Table {
         return this.#__fields
     }
 
+    __getPrimaryKey__ = () => {
+        /**
+         *  @desc Trả về danh sách tất cả các trường thuộc khóa chính
+         *  @params /
+         * 
+         *  @author Linguistic
+         */
+        return this.#__primaryKey
+    }
+
+    __getForeignKeys__ = () => {
+        /**
+         *  @desc Trả về danh sách tất cả các khóa ngoại hiện có
+         *  @params /
+         * 
+         *  @author Linguistic
+         */
+        return this.#__foreignKeys
+    }
+
     __setFields__ = (fields) => {
         /**
          *  @desc Thiết đặt lại danh sách các trường
@@ -133,7 +153,7 @@ class Table {
         }
     }
 
-    __addForeignKey__ = ( fieldName, referencesOn ) => {
+    __addForeignKey__ = ( fieldName, referencesOn, onField = undefined ) => {
 
         /**
          *  @desc Thêm một trường khoá ngoại và GHI ĐÈ một thuộc tính với tên là bảng chứa khoá chính           
@@ -149,7 +169,8 @@ class Table {
         const __tableName = ObjReferencesOn.getModel().__getTableName__();                       
         this[ __tableName ] = ObjReferencesOn;       
       
-        this.#__foreignKeys.push({ __fieldName: fieldName, __tableName });
+        const __onField = onField ? onField : fieldName 
+        this.#__foreignKeys.push({ __fieldName: fieldName, __tableName, __onField });
     }
 
     __addPrimaryKey__ = ( fields ) => {
@@ -232,10 +253,10 @@ class Table {
          */ 
 
         for( let i = 0; i < this.#__foreignKeys.length; i++ ){
-            const { __fieldName, __tableName } = this.#__foreignKeys[i];  /* 1 */
+            const { __fieldName, __tableName, __onField } = this.#__foreignKeys[i];  /* 1 */
             const foreignDBObj = this[__tableName]; /* 2 */
             const key = {}
-            key[ __fieldName ] = data[ __fieldName ]; /* 3 */
+            key[ __onField ] = data[ __fieldName ]; /* 3 */
             await foreignDBObj.model.__dbInit__();            
             const dataExists = await foreignDBObj.model.__findCriteria__( key ); /* 4 */
             
