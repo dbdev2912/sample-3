@@ -18,7 +18,7 @@ class Field {
             @params: val <Any>
             @auth: Linguistic
         **/
-        if( val ){
+        if( val != undefined ){
             this.__value = val;
             return val
         }

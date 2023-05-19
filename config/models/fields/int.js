@@ -49,7 +49,7 @@ class Int extends Number{
             @auth: Linguistic
         **/
 
-        if( val ){            
+        if( val != undefined ){            
             if( intValidate(val) ){
                 this.__value = parseInt(val)               
                 return this.__value

@@ -180,7 +180,7 @@ class Mongo {
             this.dbo.collection( table ).deleteOne( query, (err, result) => {
                 resolve( result )
             })
-        });
+        });        
     }
 }
 

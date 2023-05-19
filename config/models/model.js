@@ -21,9 +21,9 @@ class Model {
     }
 
     setDefaultValue = ( serializedData ) => {
-        const fields = this.#model.__getFields__()
+        const fields = this.#model.__getFields__()        
         for( let i = 0; i < fields.length; i++ ){
-            const { __fieldName, __fieldObject } =  fields[i]
+            const { __fieldName, __fieldObject } =  fields[i]            
             this[ __fieldName ] = __fieldObject
             this[ __fieldName ].value( serializedData[ __fieldName ] )
         }

@@ -1,1 +1,1 @@
-{"models":["customers","orders","MyModel"],"controllers":["sample","controller_moi_ne","__update__","test/__update__","sample","sample"]}
+{"models":["Customers","Orders","MyModel"],"controllers":["sample","controller_moi_ne","__update__","test/__update__","sample","sample","production/product","production/product","production/product","production/product","MyController","MyController","MyController","MyController"]}

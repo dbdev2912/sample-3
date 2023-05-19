@@ -26,17 +26,21 @@ const readManageJSON = () => {
 
 const writeManageJSON = () => {
     if( fs.existsSync(managePATH) ){
+        infoLog("Xóa tệp manage.js")
         fs.unlinkSync(managePATH)
     }
     const stringifiedData = JSON.stringify({ models, controllers });
+    infoLog("Ghi lại giá trị vào manage.js")
     fs.writeFileSync(managePATH, stringifiedData)
 }
 
 const writeManageJSONWithData = ({ models, controllers }) => {
-    if( fs.existsSync(managePATH) ){
+    if( fs.existsSync(managePATH) ){   
+        infoLog("Xóa tệp manage.js")
         fs.unlinkSync(managePATH)
     }
     const stringifiedData = JSON.stringify({ models, controllers });
+    infoLog("Ghi lại giá trị vào manage.js")
     fs.writeFileSync(managePATH, stringifiedData)
 }
 
@@ -55,16 +59,23 @@ const validateName = ( name ) => {
     return valid;
 } 
 
-const successLog = (msg) => {
-    console.log(`PASSED:   ${msg}`)
+
+/* ==== LOGGERS ====*/
+
+const successLog = (msg, prefix="" ) => {
+    console.log(`${prefix}PASSED:   ${msg}`)
 }
 
-const errorLog = (msg) => {
-    console.log(`ERROR!:   ${ msg }`)
+const errorLog = (msg, prefix="" ) => {
+    console.log(`${prefix}ERROR!:   ${ msg }`)
 }
 
-const warningLog = (msg) => {
-    console.log(`WARNNING: ${ msg }`)
+const warningLog = (msg, prefix="" ) => {
+    console.log(`${prefix}WARNNING: ${ msg }`)
+}
+
+const infoLog = (msg, prefix="" ) => {
+    console.log(`${prefix}INFOR:    ${ msg }`)
 }
 
 /* ==== COMMANDS RESOLVING ====*/
@@ -72,7 +83,7 @@ const warningLog = (msg) => {
 
 const __command_create__ = ( ) => {
     if( commands.length < 4 ){
-        console.log("Rồi tạo là tạo cái gì mà ghi chữ create xong cái bỏ ngang dzậy ? ")
+        warningLog("Rồi tạo là tạo cái gì mà ghi chữ create xong cái bỏ ngang dzậy ? ")
         return
     }
     const command = commands[3].toLowerCase();
@@ -84,28 +95,28 @@ const __command_create__ = ( ) => {
             __command_create__controller__();
             break;
         default:
-            console.log(`Ở đây không có lệnh tạo ${ commands[3] } nhe quí dị!`)
+            errorLog(`Ở đây không có lệnh tạo ${ commands[3] } nhe quí dị!`)
             break;
     }
 }
 
 const __command_create_model__ = () => {
     if( commands.length < 5 ){
-        console.log("Không tìm thấy tên model trong command!")
+        warningLog("Không tìm thấy tên model trong command!")
         return
     }
     const modelName = commands[4];    
     const makeModelResult = __make_model__( modelName )
     if( makeModelResult ){
         models.push( modelName );
+        successLog(`Tạo model ${ modelName } thành công!\n`)
         writeManageJSON()
-        console.log(`Tạo model ${ modelName } thành công!\n`)
     }
 }
 
 const __command_create__controller__ = () => {
     if( commands.length < 5 ){
-        console.log("Không tìm thấy tên controller trong command!")
+        errorLog("Không tìm thấy tên controller trong command!")
         return
     }
     const controllerName = commands[4];
@@ -113,8 +124,8 @@ const __command_create__controller__ = () => {
     const makeControllerResult =  __make_controller__( controllerName )
     if( makeControllerResult ){
         controllers.push( controllerName );
+        successLog(`Tạo controller ${ controllerName } thành công!\n`)
         writeManageJSON()
-        console.log(`Tạo controller ${ controllerName } thành công!\n`)
     }
 }
 
@@ -125,7 +136,7 @@ const __make_model__ = ( modelPath ) => {
     
     const isNameValid = validateName(modelName);
     if( !isNameValid ){
-        console.log("Tên không hợp lệ!")
+       errorLog("Tên không hợp lệ!")
         return false;
     }
 
@@ -162,12 +173,14 @@ module.exports = { ${ modelName }, ${ modelName }Record }
         modelStringPath = modelStringPath.replace('//', '/');
         
         if( !fs.existsSync( modelStringPath ) ){
+            infoLog(`Tạo thư mục ${ modelStringPath }`)
             fs.mkdirSync( modelStringPath )
         }
     }
     const newModelFilePath = `${ modelBaseDir }/${ modelPath }.js`;
 
     if( fs.existsSync( newModelFilePath ) ){
+        warningLog(`Xóa tệp cũ tại ${ newModelFilePath }`)
         fs.unlinkSync( newModelFilePath )
     }
     fs.writeFileSync(newModelFilePath, modelTemplate )  
@@ -181,7 +194,7 @@ const __make_controller__ = ( controllerPath ) => {
     const isNameValid = validateName(controllerName);
 
     if( !isNameValid ){
-        console.log("Tên không hợp lệ!")
+        errorLog("Tên không hợp lệ!")
         return false;
     }
 
@@ -195,6 +208,19 @@ class ${ controllerName } extends Controller {
         super();
     }
 
+    get = async ( req, res ) => {
+        this.writeReq(req)
+
+        /* Logical code goes here */
+
+        this.writeRes({ status: 200, message: "Sample response" })
+        res.status(200).send({
+            success: true,
+            content: "Sample response",
+            data: []
+        })
+    }
+
 }
 module.exports = ${ controllerName }
 
@@ -204,6 +230,7 @@ module.exports = ${ controllerName }
         controllerStringPath = controllerStringPath.replace('//', '/');
         
         if( !fs.existsSync( controllerStringPath ) ){
+            infoLog(`Tạo thư mục ${ controllerStringPath }`)
             fs.mkdirSync( controllerStringPath )
         }
     }
@@ -211,6 +238,7 @@ module.exports = ${ controllerName }
     const newControllerFilePath = `${ controllerBaseDir }/${ controllerPath }.js`
 
     if( fs.existsSync( newControllerFilePath ) ){
+        warningLog(`Xóa tệp cũ tại ${ newControllerFilePath }`)
         fs.unlinkSync( newControllerFilePath )
     }
 
@@ -219,20 +247,22 @@ module.exports = ${ controllerName }
 }
 
 
-const __command_migrate__ = async () => {
+const __command_migrate__ = async ( migration = undefined ) => {
     let migrateModels = models;
+    let saveModels = [];
     if( commands.length > 3 ){
         migrateModels = commands.slice( 3, commands.length );
         let valid = true;
         for( let i = 0; i < migrateModels.length; i++ ){
             if( models.indexOf(migrateModels[i]) == -1 ){
-                console.log(`Model ${ migrateModels[i] } không tồn tại!`)
+                errorLog(`Model ${ migrateModels[i] } không tồn tại!`)
                 valid = false
             }
         }
         if( !valid ){
             return
         }
+        saveModels = models;
     }
 
     const existingModels = []
@@ -242,46 +272,35 @@ const __command_migrate__ = async () => {
             const obj = require(modelPath)
             const keys = Object.keys(obj);
             const modelObject = obj[keys[0]]   
-            existingModels.push( model )         
+            existingModels.push( model )
+            
             return modelObject
         }catch{
             return undefined
         }
     }).filter( obj => obj != undefined );
 
-    /* Translate to MySQL OR Anything Code base on env */
-    /* Check the fucking fields and keys either the same or not */
-
     let valid = true;
     for( let i = 0 ; i < modelObjects.length; i++ ){
         const modelObject = modelObjects[i]
-        const validateResult = await modelValidator(modelObject)
+        const validateResult = modelValidator(modelObject)
         if( !validateResult ){
             valid = false
         }
     }
 
-    if( valid ){
-        console.log("VALID")
-        /* Write change to database  */
+    if( valid ){        
+        if( migration != undefined ){
+            await migration(modelObjects);
+        }
     }
 
-
-    writeManageJSONWithData({ controllers, models: existingModels })
+    infoLog("Cập nhật manage.json", "\n")
+    writeManageJSONWithData({ controllers, models: (saveModels.length > 0 ? saveModels: existingModels) })
 }
 
 
-const modelValidator = async ( modelObj ) => {
-
-    /** 
-        Có ít 2 trường bao gồm id 
-        Có ít nhất một trường khóa chính 
-        Khóa chính phải thuộc danh sách các trường 
-        Nếu có khóa ngoại thì 
-            - Khóa ngoại phải tồn tại trong danh sách các trường 
-            - Bảng chứa khóa ngoại phải tồn tại
-            - Khóa ngoại phải thuộc danh sách các trường thuộc bảng chứa khóa ngoại 
-    **/
+const modelValidator = ( modelObj ) => {
 
     const Model       = new modelObj()
     const model       = Model.getModel()
@@ -339,7 +358,15 @@ const modelValidator = async ( modelObj ) => {
                 const filtedField = foreignFields.filter( field => field.__fieldName === __onField )[0];
 
                 if( fieldExisted != undefined && filtedField != undefined ){
-                    successLog(`Khóa ngoại ${ __fieldName } hợp lệ `)
+                    const fieldObject = fieldExisted.__fieldObject;
+                    const foreignFieldObject = filtedField.__fieldObject;
+
+                    if( fieldObject.__datatype === foreignFieldObject.__datatype ){
+                        successLog(`Khóa ngoại ${ __fieldName } hợp lệ`)
+                    }else{
+                        errorLog(`${ tableName }.${ __fieldName }[ ${ fieldObject.__datatype.toUpperCase() } ] và ${ foreignTableName }.${ __onField }[ ${ foreignFieldObject.__datatype.toUpperCase() } ] phải có cùng kiểu dữ liệu`)
+                        valid = false;
+                    }
                 }else{
                     if( fieldExisted == undefined ){
                         errorLog(`Khóa ${ __fieldName } không tồn tại trong danh sách trường của bảng ${ tableName }`)
@@ -354,13 +381,24 @@ const modelValidator = async ( modelObj ) => {
         }
 
     }
-    fieldAmountCheck()
-    pkAmountCheck()
-    pkValidator()
-    fkValidator()
+    const condition_1 = fieldAmountCheck()
+    const condition_2 = pkAmountCheck()
+    const condition_3 = pkValidator()
+    const condition_4 = fkValidator()
+    const result = condition_1 && condition_2 && condition_3 && condition_4;
 
-    return true
+    return result;
 }
+
+const __command_makemigration__ = async (models) => {
+    for( let i = 0; i < models.length ; i++ ){
+        const Model = new models[i]()
+        const model = Model.getModel()
+        infoLog(`Make migration trên bảng ${ model.__getTableName__() }`)
+        await model.__deleteAll__()
+    }      
+}
+
 
 /* ==== MAIN THREAD ==== */
 const manageData = readManageJSON()
@@ -370,7 +408,7 @@ const commands = process.argv
 
 const __main__ = async () => {
     if( commands.length < 3 ){
-        console.log(`
+        infoLog(`
 Cú pháp: 
 node manage create [ model < modelName > ]  ||
             create [ controller < controllerName > ] ||
@@ -395,10 +433,14 @@ Ví dụ:
         case "migrate":
             await __command_migrate__()
             break;
+        case "makemigration":
+            await __command_migrate__( __command_makemigration__ )                                    
+            break;
         default:
-            console.log(`Không tìm thấy lệnh! :( `)
+            warningLog(`Không tìm thấy lệnh! :( `)
             break;
     }
+    process.exit(1);
 }
-
+        
 __main__()

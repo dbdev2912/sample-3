@@ -12,7 +12,7 @@ class String extends Field{
     constructor( name, value, props ){
         super( name, "string", value );
         this.__maxLength = 255;
-        this.__required = true;
+        this.__required = false;
         this.__default = undefined;
 
         this.#__initializeProperties( props )
@@ -82,7 +82,7 @@ class String extends Field{
             @params: val <String>
             @author: DS
         **/
-        if( val ){
+        if( val != undefined ){
             if( val.length <= this.__maxLength ){
                 this.__value = val;
                 return val
