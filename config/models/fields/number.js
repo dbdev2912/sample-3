@@ -1,13 +1,15 @@
 const Field = require('./field');
 
-class Number extends Field{
+class Enum extends Field{
     constructor( name, value, props ){
-        super( name, "number", value );
+        super( name, "enum", value );
+        this.__required = true;
+        this.__values = []
+        this.#__initializeProperties__(props);
+
         if( !this.selfValidate() ){
             throw Error ('Giá trị truyền vào không tương thích với kiểu dữ liệu number')
         }        
-        this.__required = true;
-        this.#__initializeProperties__(props);
     }
 
     #__initializeProperties__ = ( props ) => {
@@ -22,10 +24,10 @@ class Number extends Field{
             @author: DS
         **/
         if( props ){
-            const { required } = props;
+            const { required, values } = props;
             if( required != undefined ){
                 this.__required = required
-            }
+            }            
         }
     }
 
@@ -60,4 +62,4 @@ class Number extends Field{
     }
 }
 
-module.exports = Number
+module.exports = Enum

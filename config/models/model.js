@@ -1,5 +1,5 @@
 const Table = require('./table');
-const { Number, String, Datetime, Int, Bool } = require('./fields');
+const { Number, String, Datetime, Int, Bool, Enum } = require('./fields');
 
 class Model {
     static types = {
@@ -7,13 +7,14 @@ class Model {
         int:        Int,        
         string:     String,
         datetime:   Datetime,
-        bool:       Bool
+        bool:       Bool,
+        enum:       Enum
     }
     #model = undefined;
 
     constructor(modelName){
         this.#model = new Table(modelName)
-        this.#model.__addField__( "id", Model.types.int );
+        this.#model.__addField__( "id", Model.types.int, { required: false } );
     }
 
     getModel = () => {
@@ -23,7 +24,7 @@ class Model {
     setDefaultValue = ( serializedData ) => {
         const fields = this.#model.__getFields__()        
         for( let i = 0; i < fields.length; i++ ){
-            const { __fieldName, __fieldObject } =  fields[i]            
+            const { __fieldName, __fieldObject } =  fields[i]                        
             this[ __fieldName ] = __fieldObject
             this[ __fieldName ].value( serializedData[ __fieldName ] )
         }
@@ -66,6 +67,10 @@ class Model {
             const fields = this.#model.__getFields__()
             for( let i = 0; i < fields.length; i++ ){
                 const { __fieldName } =  fields[i]
+                const required = this[ __fieldName ].__required;
+                if( required && this[ __fieldName ].value() == undefined ){
+                    throw Error(`${this.#model.__getTableName__()}.${__fieldName} mang thuộc tính required = true nên không được phép bỏ trống!`)
+                }
                 newData[ __fieldName ] = this[ __fieldName ].value();                
             }
             const updateResult = await this.#model.__updateObject__( {...newData} );
@@ -78,6 +83,11 @@ class Model {
 
             for( let i = 0; i < fields.length; i++ ){
                 const { __fieldName } =  fields[i]
+                const required = this[ __fieldName ].__required;
+                if( required && this[ __fieldName ].value() == undefined ){
+                    throw Error(`${this.#model.__getTableName__()}.${__fieldName} mang thuộc tính required = true nên không được phép bỏ trống!`)
+                }
+
                 newData[ __fieldName ] = this[ __fieldName ].value();                
             }
             let insertResult = await this.#model.__insertObject__( newData );
