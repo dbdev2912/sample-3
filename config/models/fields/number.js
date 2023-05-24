@@ -1,10 +1,11 @@
 const Field = require('./field');
 
-class Enum extends Field{
+class Number extends Field{
     constructor( name, value, props ){
-        super( name, "enum", value );
-        this.__required = true;
+        super( name, "number", value );
+        this.__required = false;
         this.__values = []
+        this.__auto = false;
         this.#__initializeProperties__(props);
 
         if( !this.selfValidate() ){
@@ -24,10 +25,13 @@ class Enum extends Field{
             @author: DS
         **/
         if( props ){
-            const { required, values } = props;
+            const { required, auto } = props;
             if( required != undefined ){
                 this.__required = required
             }            
+            if( auto != undefined ){
+                this.__auto = auto
+            }
         }
     }
 
@@ -62,4 +66,5 @@ class Enum extends Field{
     }
 }
 
-module.exports = Enum
+module.exports = Number
+

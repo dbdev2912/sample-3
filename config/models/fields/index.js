@@ -4,6 +4,7 @@ const String = require('./string');
 const Int = require('./int');
 const Bool = require('./bool');
 const Enum = require('./enum');
+const List = require('./array')
 
 module.exports = {
     Number,
@@ -11,5 +12,6 @@ module.exports = {
     String,
     Int,
     Bool,
-    Enum
+    Enum,
+    List
 }

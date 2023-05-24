@@ -3,7 +3,7 @@ const Field = require('./field');
 class Datetime extends Field{
     constructor( name, value, props ){
         super( name, "datetime", value );
-        this.__required = true;
+        this.__required = false;
         this.__format = "DD-MM-YYYY hh:mm:ss"
         this.#__initializeProperties__(props)
     }

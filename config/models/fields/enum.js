@@ -1,8 +1,8 @@
 const Field = require('./field');
 
-class Number extends Field{
+class Enum extends Field{
     constructor( name, value, props ){
-        super( name, "number", value );
+        super( name, "enum", value );
         if( !this.selfValidate() ){
             const ERROR_MSG = `Giá trị truyền vào không tương thích với kiểu dữ liệu ENUM [${ this.__values.toString() }]`;
             throw Error (ERROR_MSG)
@@ -80,4 +80,5 @@ class Number extends Field{
     }
 }
 
-module.exports = Number
+module.exports = Enum
+
