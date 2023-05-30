@@ -102,8 +102,12 @@ class Mongo {
         
         const data = await new Promise( (resolve, reject) => {
             if( criteria != undefined){
-                this.dbo.collection( table ).findOne( query, (err, result) => {                    
-                    resolve( result )
+                this.dbo.collection( table ).find(query).toArray((err, result) => {
+                    if( result.length <= 1 ){
+                        resolve( result[0] )
+                    }else{
+                        resolve( result )
+                    }
                 })
             }else{
                 this.dbo.collection( table ).find().toArray((err, result) => {
